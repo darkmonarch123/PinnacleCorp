@@ -1,0 +1,6 @@
+com\pinnacle\oms\service\OrderServiceTest.class
+com\pinnacle\account\service\AccountServiceTest.class
+com\pinnacle\position\service\PositionServiceTest.class
+com\pinnacle\reporting\service\TradeHistoryServiceTest.class
+com\pinnacle\oms\service\LedgerServiceTest.class
+com\pinnacle\oms\service\RiskCheckServiceTest.class

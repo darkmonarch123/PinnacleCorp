@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: pinnacle-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/pinnacle}
+    username: ${SPRING_DATASOURCE_USERNAME:pinnacle}
+    password: ${SPRING_DATASOURCE_PASSWORD:pinnacle_dev_password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # schema owned by db/init.sql, not Hibernate auto-generation
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+
+server:
+  port: 8080
+
+pinnacle:
+  clerk:
+    # e.g. https://viable-quail-77.clerk.accounts.dev — decode the pk_test_...
+    # publishable key (base64) to get this if you don't have it handy.
+    issuer: ${CLERK_ISSUER:}
+    # Optional: only needed to fetch email/name from Clerk's Backend API when
+    # the session token itself doesn't carry those claims.
+    secret-key: ${CLERK_SECRET_KEY:}
+  cors:
+    # Comma-separated list of allowed frontend origins. Defaults to localhost
+    # for local dev — set ALLOWED_ORIGINS in production to your real deployed
+    # frontend URL(s), e.g. https://thrive.vercel.app
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:*}
+  demo:
+    starting-balance: 10000.00
+  market-data:
+    provider: ${MARKET_DATA_PROVIDER:twelvedata}
+    api-key: ${MARKET_DATA_API_KEY:}
+    poll-interval-ms: 5000
+    symbols: AAPL,MSFT,GOOGL,AMZN,TSLA,NVDA,JPM,V
+
+logging:
+  level:
+    com.pinnacle: INFO
+    org.springframework.security: WARN
