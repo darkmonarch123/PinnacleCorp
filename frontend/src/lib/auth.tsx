@@ -1,5 +1,5 @@
 import { useAuth as useClerkAuth, useClerk } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Clerk-backed auth.
@@ -32,29 +32,48 @@ function useDemoSession(): Session {
     setSignedIn(window.localStorage.getItem(DEMO_KEY) === "1");
   }, []);
 
-  return {
-    isLoaded: signedIn !== null,
-    isSignedIn: Boolean(signedIn),
-    signIn: () => {
-      window.localStorage.setItem(DEMO_KEY, "1");
-      setSignedIn(true);
-    },
-    signOut: () => {
-      window.localStorage.removeItem(DEMO_KEY);
-      setSignedIn(false);
-    },
-  };
+  const signIn = useCallback(() => {
+    window.localStorage.setItem(DEMO_KEY, "1");
+    setSignedIn(true);
+  }, []);
+
+  const signOut = useCallback(() => {
+    window.localStorage.removeItem(DEMO_KEY);
+    setSignedIn(false);
+  }, []);
+
+  return useMemo(
+    () => ({
+      isLoaded: signedIn !== null,
+      isSignedIn: Boolean(signedIn),
+      signIn,
+      signOut,
+    }),
+    [signedIn, signIn, signOut]
+  );
 }
 
 function useRealSession(): Session {
   const { isLoaded, isSignedIn } = useClerkAuth();
   const clerk = useClerk();
-  return {
-    isLoaded,
-    isSignedIn: Boolean(isSignedIn),
-    signIn: () => clerk.redirectToSignIn(),
-    signOut: () => void clerk.signOut(),
-  };
+
+  const signIn = useCallback(() => {
+    clerk.redirectToSignIn();
+  }, [clerk]);
+
+  const signOut = useCallback(() => {
+    void clerk.signOut();
+  }, [clerk]);
+
+  return useMemo(
+    () => ({
+      isLoaded,
+      isSignedIn: Boolean(isSignedIn),
+      signIn,
+      signOut,
+    }),
+    [isLoaded, isSignedIn, signIn, signOut]
+  );
 }
 
 /** Selected once at module load — never switches between renders. */
