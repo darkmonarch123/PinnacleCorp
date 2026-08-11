@@ -440,10 +440,22 @@ export const actions = {
     state.positions = state.positions.map((p) => (p.id === positionId ? { ...p, ...patch } : p));
     emit();
     if (isApiConfigured && positionId.length > 10) {
-      api.modifyPosition(positionId, {
-        ...(patch.stopLoss !== undefined ? { stopLoss: patch.stopLoss ?? undefined, clearStopLoss: patch.stopLoss == null } : {}),
-        ...(patch.takeProfit !== undefined ? { takeProfit: patch.takeProfit ?? undefined, clearTakeProfit: patch.takeProfit == null } : {}),
-      }).then(syncFromBackend).catch((err) => console.error("modifyPosition failed:", err));
+      const body: {
+        stopLoss?: number;
+        takeProfit?: number;
+        clearStopLoss?: boolean;
+        clearTakeProfit?: boolean;
+      } = {};
+      if (patch.stopLoss !== undefined) {
+        if (patch.stopLoss == null) body.clearStopLoss = true;
+        else body.stopLoss = patch.stopLoss as number;
+      }
+      if (patch.takeProfit !== undefined) {
+        if (patch.takeProfit == null) body.clearTakeProfit = true;
+        else body.takeProfit = patch.takeProfit as number;
+      }
+
+      api.modifyPosition(positionId, body).then(syncFromBackend).catch((err) => console.error("modifyPosition failed:", err));
     }
   },
 
