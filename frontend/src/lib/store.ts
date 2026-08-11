@@ -167,6 +167,23 @@ export function accountSummary(s: AppState) {
   return value;
 }
 
+/**
+ * Same reference-stability requirement as `accountSummary` above — `.filter()`
+ * always returns a new array, which breaks `useSyncExternalStore` if used
+ * directly as a selector (e.g. `useStore((s) => s.orders.filter(...))`).
+ * Use this memoized selector instead: `useStore(pendingOrders)`.
+ */
+let pendingOrdersCache: { forState: AppState; value: Order[] } | null = null;
+
+export function pendingOrders(s: AppState): Order[] {
+  if (pendingOrdersCache && pendingOrdersCache.forState === s) {
+    return pendingOrdersCache.value;
+  }
+  const value = s.orders.filter((o) => o.status === "PENDING");
+  pendingOrdersCache = { forState: s, value };
+  return value;
+}
+
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 /* ---------------------------- backend <-> local mapping ---------------------------- */

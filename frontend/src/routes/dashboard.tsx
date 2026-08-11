@@ -9,7 +9,7 @@ import { QuoteChip, useQuote } from "@/components/Quote";
 import { TickerLogo } from "@/components/TickerLogo";
 import { dateTime, money, pnlClass, signedMoney, signedPct } from "@/lib/format";
 import { buildCandles, TIMEFRAMES, type Timeframe } from "@/lib/market";
-import { actions, priceOf, useStore } from "@/lib/store";
+import { actions, pendingOrders, priceOf, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/dashboard")({
@@ -34,7 +34,7 @@ function Dashboard() {
   const watchlist = useStore((s) => s.watchlist);
   const positions = useStore((s) => s.positions);
   const prices = useStore((s) => s.prices);
-  const orders = useStore((s) => s.orders.filter((o) => o.status === "PENDING"));
+  const orders = useStore(pendingOrders);
   const alerts = useStore((s) => s.alerts);
   const quote = useQuote(symbol);
 
@@ -235,4 +235,3 @@ function Dashboard() {
     </AppShell>
   );
 }
-
