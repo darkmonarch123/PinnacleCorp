@@ -127,7 +127,21 @@ export function unrealizedPnl(s: AppState) {
   return s.positions.reduce((sum, p) => sum + (priceOf(s, p.symbol) - p.avgPrice) * p.quantity, 0);
 }
 
-export function accountSummary(s: AppState) {
+/**
+ * IMPORTANT: this is used as a `useStore` selector (`useStore(accountSummary)`),
+ * and `useStore` is backed by `useSyncExternalStore`. That hook requires the
+ * snapshot function to return the *same reference* when nothing has changed —
+ * otherwise React thinks the store changed on every render and re-renders
+ * forever (React error #185: Maximum update depth exceeded).
+ *
+ * `emit()` always replaces `state` with a new object reference when — and
+ * only when — something actually changed, so caching the computed summary
+ * per `state` reference is a correct and cheap way to satisfy that
+ * requirement: same `state` in ⇒ same summary object out.
+ */
+let summaryCache: { forState: AppState; value: ReturnType<typeof computeAccountSummary> } | null = null;
+
+function computeAccountSummary(s: AppState) {
   const invested = positionsValue(s);
   const equity = s.cash + invested;
   const unrealized = unrealizedPnl(s);
@@ -142,6 +156,15 @@ export function accountSummary(s: AppState) {
     totalPnl: equity - STARTING_BALANCE,
     realized,
   };
+}
+
+export function accountSummary(s: AppState) {
+  if (summaryCache && summaryCache.forState === s) {
+    return summaryCache.value;
+  }
+  const value = computeAccountSummary(s);
+  summaryCache = { forState: s, value };
+  return value;
 }
 
 const uid = () => Math.random().toString(36).slice(2, 10);
@@ -353,12 +376,12 @@ export const actions = {
           state.positions = state.positions.map((p) =>
             p.id === existing.id
               ? {
-                  ...p,
-                  quantity: qty,
-                  avgPrice: (existing.avgPrice * existing.quantity + cost) / qty,
-                  stopLoss: input.stopLoss ?? p.stopLoss,
-                  takeProfit: input.takeProfit ?? p.takeProfit,
-                }
+                ...p,
+                quantity: qty,
+                avgPrice: (existing.avgPrice * existing.quantity + cost) / qty,
+                stopLoss: input.stopLoss ?? p.stopLoss,
+                takeProfit: input.takeProfit ?? p.takeProfit,
+              }
               : p,
           );
         } else {
