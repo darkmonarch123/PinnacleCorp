@@ -184,6 +184,18 @@ export function pendingOrders(s: AppState): Order[] {
   return value;
 }
 
+/** Same reference-stability requirement — `.slice()` always returns a new array. */
+let recentTradesCache: { forState: AppState; value: Trade[] } | null = null;
+
+export function recentTrades(s: AppState): Trade[] {
+  if (recentTradesCache && recentTradesCache.forState === s) {
+    return recentTradesCache.value;
+  }
+  const value = s.trades.slice(0, 6);
+  recentTradesCache = { forState: s, value };
+  return value;
+}
+
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 /* ---------------------------- backend <-> local mapping ---------------------------- */

@@ -5,7 +5,7 @@ import { AppShell } from "@/components/AppShell";
 import { Panel, StatCard } from "@/components/Panel";
 import { TickerLogo } from "@/components/TickerLogo";
 import { dateTime, money, num, pnlClass, signedMoney } from "@/lib/format";
-import { accountSummary, actions, positionsValue, useStore } from "@/lib/store";
+import { accountSummary, actions, positionsValue, recentTrades, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/portfolio")({
@@ -25,7 +25,7 @@ function PortfolioPage() {
   const positions = useStore((s) => s.positions);
   const prices = useStore((s) => s.prices);
   const invested = useStore(positionsValue);
-  const trades = useStore((s) => s.trades.slice(0, 6));
+  const trades = useStore(recentTrades);
 
   const numberField =
     "font-num w-24 rounded-lg border border-input bg-card px-2 py-1.5 text-xs";
